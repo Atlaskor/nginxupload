@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx # This points to the Dockerfile we just created for Nginx
+    ports:
+      - "80:80"
+    volumes:
+      # Mount the current directory (where index.html and upload.php are) into Nginx's web root
+      - ./html:/var/www/html
+      # Mount Nginx's configuration files (optional if they are copied in Dockerfile)
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+    networks:
+      - app_network
+
+  php:
+    image: php:8.2-fpm-alpine # Use an Alpine-based PHP-FPM image for small size
+    volumes:
+      # Mount the current directory (where index.html and upload.php are) into PHP-FPM's web root
+      - ./html:/var/www/html
+      # Mount the custom php.ini
+      - ./php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
